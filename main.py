@@ -1,6 +1,7 @@
 import sys
 import time
 from typing import Generator
+import sounddevice as sd
 from test_streaming import SupertonicStreamingPipeline
 
 
@@ -45,7 +46,7 @@ def main():
     print("--- 1. Simulated Real-Time Text Stream ---")
     # Wrap in a list or consume it so we can print the streaming effect
     token_generator = stream_text_output(text, delay=0.04)
-    tokens = list(token_generator)
+    _ = list(token_generator)
     print("\n\n--- 2. End-to-End Text to PCM Audio Streaming ---")
 
     # Initialize the streaming audio pipeline
@@ -54,21 +55,33 @@ def main():
     # Generate the text stream again for synthesis
     text_stream = stream_text_output(text, delay=0.01)
 
-    print("\nSynthesizing streaming audio...")
+    print("\nSynthesizing and streaming audio to speakers...")
     pcm_chunks = []
     chunk_count = 0
 
-    # Pass the text stream generator directly into the pipeline
-    for pcm_chunk in pipeline.stream_text_to_pcm(text_stream, min_char_threshold=60):
-        chunk_count += 1
-        pcm_chunks.append(pcm_chunk)
-        print(
-            f"\n[Audio Chunk {chunk_count}: Generated {len(pcm_chunk)} PCM bytes]",
-            end="",
-            flush=True,
-        )
+    # Initialize the real-time audio playback stream
+    audio_stream = sd.RawOutputStream(
+        samplerate=pipeline.sample_rate,
+        channels=1,
+        dtype="int16",
+    )
 
-    print("\n\nStreaming synthesis complete.")
+    with audio_stream:
+        # Pass the text stream generator directly into the pipeline
+        for pcm_chunk in pipeline.stream_text_to_pcm(
+            text_stream, min_char_threshold=60
+        ):
+            chunk_count += 1
+            pcm_chunks.append(pcm_chunk)
+            print(
+                f"\n[Audio Chunk {chunk_count}: Generated & Playing {len(pcm_chunk)} PCM bytes]",
+                end="",
+                flush=True,
+            )
+            # Stream the generated PCM chunk to the speakers
+            audio_stream.write(pcm_chunk)
+
+    print("\n\nStreaming synthesis and playback complete.")
     all_pcm = b"".join(pcm_chunks)
     print(f"Total chunks generated: {chunk_count}")
     print(f"Total PCM bytes accumulated: {len(all_pcm)}")
