@@ -12,14 +12,14 @@ class SupertonicStreamingPipeline:
         Initializes the streaming pipeline by loading the Supertonic-3 ONNX model
         and caching the selected voice style.
         """
-        self.tts = TTS(auto_download=auto_download)[1]
-        self.style = self.tts.get_voice_style(voice_name=voice_name)[1]
+        self.tts = TTS(auto_download=auto_download)
+        self.style = self.tts.get_voice_style(voice_name=voice_name)
         self.lang = lang
         self.sample_rate = 44100  # Default Supertonic-3 sample rate [5, 7]
 
         # Splitting regex targeting standard punctuation boundaries (.!? , ; \n),
         # utilizing a negative lookahead assertion to prevent slicing inside tag brackets <...>
-        self.boundary_regex = re.compile(r"(?<=[.!?,\n;])\s+(?![^<]*>)")[1, 7, 10]
+        self.boundary_regex = re.compile(r"(?<=[.!?,\n;])\s+(?![^<]*>)")
 
     def stream_text_to_pcm(
         self,
@@ -87,7 +87,7 @@ class SupertonicStreamingPipeline:
                 voice_style=self.style,
                 total_steps=total_steps,
                 speed=speed,
-            )[1, 15]
+            )
 
             # Output is a 2D numpy array of shape (1, samples) with float32 values [1, 15]
             audio_data = wav.squeeze()
