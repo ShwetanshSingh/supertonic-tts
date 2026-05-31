@@ -1,7 +1,6 @@
 import sys
 import time
 from typing import Generator
-from supertonic import TTS
 from test_streaming import SupertonicStreamingPipeline
 
 
