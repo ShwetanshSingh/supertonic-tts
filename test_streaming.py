@@ -21,6 +21,26 @@ class SupertonicStreamingPipeline:
         # utilizing a negative lookahead assertion to prevent slicing inside tag brackets <...>
         self.boundary_regex = re.compile(r"(?<=[.!?,\n;])\s+(?![^<]*>)")
 
+    def _find_split_index(self, buffer: str, min_char_threshold: int) -> int:
+        """
+        Identifies the optimal split index in the accumulated buffer
+        based on punctuation boundaries and character thresholds.
+        """
+        boundaries = list(self.boundary_regex.finditer(buffer))
+        if not boundaries:
+            return -1
+
+        # Find the first boundary that exceeds the min_char_threshold
+        for match in boundaries:
+            if match.start() >= min_char_threshold:
+                return match.start()
+
+        # Force-slice at the last known punctuation boundary if the buffer is too large
+        if len(buffer) > min_char_threshold * 2:
+            return boundaries[-1].start()
+
+        return -1
+
     def stream_text_to_pcm(
         self,
         token_stream: Iterator[str],
@@ -36,32 +56,19 @@ class SupertonicStreamingPipeline:
         for token in token_stream:
             buffer += token
 
-            # Identify logical syntactic boundaries in the accumulated text
-            boundaries = list(self.boundary_regex.finditer(buffer))
-            if not boundaries:
+            split_idx = self._find_split_index(buffer, min_char_threshold)
+            if split_idx == -1:
                 continue
 
-            # Select the split index that best matches the target character threshold
-            split_idx = -1
-            for match in boundaries:
-                if match.start() >= min_char_threshold:
-                    split_idx = match.start()
-                    break
+            chunk_text = buffer[: split_idx + 1].strip()
+            buffer = buffer[split_idx + 1 :]
 
-            # Force-slice at the last known punctuation boundary if the buffer grows too large
-            if split_idx == -1 and len(buffer) > min_char_threshold * 2:
-                split_idx = boundaries[-1].start()
-
-            if split_idx != -1:
-                chunk_text = buffer[: split_idx + 1].strip()
-                buffer = buffer[split_idx + 1 :]
-
-                if chunk_text:
-                    pcm_bytes = self._synthesize_chunk_to_pcm(
-                        chunk_text, total_steps, speed
-                    )
-                    if pcm_bytes:
-                        yield pcm_bytes
+            if chunk_text:
+                pcm_bytes = self._synthesize_chunk_to_pcm(
+                    chunk_text, total_steps, speed
+                )
+                if pcm_bytes:
+                    yield pcm_bytes
 
         # Flush any remaining text at the end of the stream
         remaining_text = buffer.strip()
