@@ -1,17 +1,9 @@
-## HuggingFace Page
-https://huggingface.co/Supertone/supertonic-3
-
-## HuggingFace Demo
-https://huggingface.co/spaces/Supertone/supertonic-3
-
-## Working Colab notebook
-https://colab.research.google.com/drive/1uFBNgRH6VcCheKcnkt3f-Z6znfnpEB9h#scrollTo=9qkYLEzA_SX4
-
-## GitHub Page
-https://github.com/supertone-inc/supertonic/tree/main#
+# Supertonic TTS
+- Voice cloning
+- Good audio quality
+- Doesn't support streaming by default
 
 ## Supported Languages
-
 1. Arabic (ar)
 2. Bulgarian (bg)
 3. Croatian (hr)
@@ -43,3 +35,17 @@ https://github.com/supertone-inc/supertonic/tree/main#
 29. Turkish (tr)
 30. Ukrainian (uk)
 31. Vietnamese (vi)
+
+## HuggingFace Page
+https://huggingface.co/Supertone/supertonic-3
+
+## HuggingFace Demo
+https://huggingface.co/spaces/Supertone/supertonic-3
+
+## Working Colab notebook
+https://colab.research.google.com/drive/1uFBNgRH6VcCheKcnkt3f-Z6znfnpEB9h#scrollTo=9qkYLEzA_SX4
+
+## GitHub Page
+https://github.com/supertone-inc/supertonic/tree/main#
+
+
